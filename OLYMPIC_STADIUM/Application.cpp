@@ -40,6 +40,40 @@ unsigned char* trackImage;
 GLuint trackTexture;
 int trackWidth, trackHeight;
 
+unsigned char* chairImage;
+GLuint chairTexture;
+int chairWidth, chairHeight;
+
+unsigned char* grassImage;
+GLuint grassTexture;
+int grassWidth, grassHeight;
+
+GLuint textureIDLand;
+
+
+//drawing a cylinder: not solid 
+void drawCylinder(float radius, float height) {
+	float x = 0;
+	float y = 0;
+	float z = 0;
+
+	float angle = 0.0;
+	float stepSize = 0.1;
+
+	glBegin(GL_QUAD_STRIP);
+	while (angle < 2 * PI) {
+		x = radius * cos(angle);
+		z = radius * sin(angle);
+		glVertex3f(x, y, z);
+		glVertex3f(x, y + height, z);
+		angle += stepSize;
+	}
+	glVertex3f(radius, 0, 0);
+	glVertex3f(radius, height, 0);
+	glEnd();
+}
+
+
 //drawing solid cylinder
 void drawSolidCylinder(float radius, float height) {
 	float angle = 0.0;
@@ -63,7 +97,6 @@ void drawSolidCylinder(float radius, float height) {
 //drawing circle
 void drawCircle(double radius, int n) {
 	double angle = 0.0;
-	glColor3f(1.0, 1.0, 0.0);
 	glBegin(GL_POLYGON);
 	for (int c = 0; c <= n; c++) {
 		double x = radius * cos(angle);
@@ -111,14 +144,126 @@ void drawGrid() {
 }
 
 //LAND
+
+void loadTextureDataFromGrassImage() {
+	grassImage = SOIL_load_image("grass.jpeg", &grassWidth, &grassHeight, 0, SOIL_LOAD_RGB);
+
+	if (grassImage == NULL) {
+		printf("Error : %s", SOIL_last_result());
+	}
+}
+
+void loadGrassTexture() {
+
+	loadTextureDataFromGrassImage(); // Load pattern into image data array
+	glGenTextures(1, &grassTexture);
+	glBindTexture(GL_TEXTURE_2D, grassTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, grassWidth, grassHeight, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, grassImage);  // Create texture from image data
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	SOIL_free_image_data(grassImage);
+}
+
 void drawLand() {
-	glColor3f(0.39, 0.71, 0.25);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, grassTexture);
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_POLYGON);
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(-1500, -0.8, -1500);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(-1500, -0.8, 1500);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(1500, -0.8, 1500);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(1500, -0.8, -1500);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+
+
+void drawGrassLand() {
+	glColor3f(0.10, 0.30, 0.10);
+	//glColor3f(0.05, 0.57, 0.46);
 	glBegin(GL_POLYGON);
 	glVertex3f(-1500.0, -0.8,-1500.0);
 	glVertex3f(-1500.0, -0.8,1500.0);
 	glVertex3f(1500.0, -0.8, 1500.0);
 	glVertex3f(1500.0, -0.8, -1500.0);
 	glEnd();
+}
+
+
+
+//#############################################  STADIUM FLOOR TRACK #############################################
+void loadTextureDataFromTrackImage() {
+	trackImage = SOIL_load_image("olympictrack.jpg", &trackWidth, &trackHeight, 0, SOIL_LOAD_RGB);
+
+	if (trackImage == NULL) {
+		printf("Error : %s", SOIL_last_result());
+	}
+}
+
+void loadTrackTexture() {
+
+	loadTextureDataFromTrackImage(); // Load pattern into image data array
+	glGenTextures(1, &trackTexture);
+	glBindTexture(GL_TEXTURE_2D, trackTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, trackWidth, trackHeight, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, trackImage);  // Create texture from image data
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	SOIL_free_image_data(trackImage);
+}
+
+void loadCircleLand() {
+	textureIDLand = SOIL_load_OGL_texture(
+		"tile3.jpg",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+	);
+	if (!textureIDLand) {
+		printf("Texture loading failed: %s\n", SOIL_last_result());
+	}
+}
+
+
+void stadiumGround() {
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	GLUquadric* qaud = gluNewQuadric();
+	gluQuadricTexture(qaud, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, textureIDLand);
+	glRotatef(90, 1.0, 0.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
+	gluDisk(qaud, 0.0, 900, 20, 20);
+	gluDeleteQuadric(qaud);
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+
+	glColor3f(0.01, 0.49, 0.18);
+	glBegin(GL_POLYGON);
+	glVertex3f(475, 0.2, -475);
+	glVertex3f(-475, 0.2, -475);
+	glVertex3f(-475, 0.2, 475);
+	glVertex3f(475, 0.2, 475);
+	glEnd();
+
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, trackTexture);
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_POLYGON);
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(300, 0.5, -300);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(-300, 0.5, -300);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(-300, 0.5, 300);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(300, 0.5, 300);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
 }
 
 
@@ -148,22 +293,20 @@ void drawDoor() {
 }
 
 void frontWall() {
+	glColor3f(0.67, 0.49, 0.533);
 	glPushMatrix();
-	glColor3f(0.87, 0.82, 0.76);
 	glTranslatef(250.0, 60.0, 0.0);
 	glScalef(450.0, 120.0, 5.0);
 	glutSolidCube(1.0);
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(0.87, 0.82, 0.76);
 	glTranslatef(-250.0, 60.0, 0.0);
 	glScalef(450.0, 120.0, 5.0);
 	glutSolidCube(1.0);
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(0.87, 0.82, 0.76);
 	glTranslatef(0.0, 90.0, 0.0);
 	glScalef(50.0, 60.0, 5.0);
 	glutSolidCube(1.0);
@@ -199,63 +342,271 @@ void drawWalls() {
 }
 
 
+//############################################# Top Structure#########################
+
+//curve line structures
+void drawCurveWalls() {
+	glColor3f(1.0, 1.0, 1.0);
+	GLfloat radius = 10;
+	GLfloat height = 0.1;
+
+	for (GLfloat i = 400; i <= 450; i += 0.5) {
+		drawCylinder(i, 0.2);
+		glTranslatef(0.0, 0.8, 0.0);
+	}
+
+}
+void drawTop() {
+	glPushMatrix();
+	glColor3f(0.67, 0.49, 0.53);
+	glTranslatef(0.0, 120.0, 0.0);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	GLUquadric* quad = gluNewQuadric();
+	gluCylinder(quad, 400.0, 400.0, 75, 100,100);
+	//drawSolidCylinder(450.0, 100.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.0, 120.0, 0.0);
+	drawCurveWalls();
+	glPopMatrix();
 
 
+	glPushMatrix();
+	glColor3f(0.0, 0.0, 0.0);
+	glTranslatef(0.0, 120.0, 0.0);
+	for (int i = 300; i <= 550; i++) {
+		drawSolidCylinder(i, 2.0);
+	}
+	glPopMatrix();
 
 
+}
 
-//#############################################  STADIUM FLOOR TRACK #############################################
-void loadTextureDataFromTrackImage() {
-	trackImage = SOIL_load_image("olympictrack.jpg", &trackWidth, &trackHeight, 0, SOIL_LOAD_RGB);
+void drawSeatArea() {
+	
+	glColor3f(0.04, 0.37, 0.69);
+	glPushMatrix();
+	glTranslatef(375, 120, 0);
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glScalef(200, 950, 5);
+	glutSolidCube(1.0);
+	glPopMatrix();
 
-	if (trackImage == NULL) {
+	glPushMatrix();
+	glTranslatef(-375, 120, 0);
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	glScalef(200, 950, 5);
+	glutSolidCube(1.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 120, 375);
+	glScalef(950, 5, 200);
+	glutSolidCube(1.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 120, -375);
+	glScalef(950, 5, 200);
+	glutSolidCube(1.0);
+	glPopMatrix();
+
+}
+
+void drawCircleTraingle(double radius, int n) {
+	double angle = 0.0;
+	glBegin(GL_POINTS);
+	for (int c = 0; c <= n; c++) {
+		angle = angle + (2 * PI) / n;
+		double x = radius * cos(angle);
+		double z = radius * sin(angle);
+		glVertex3f(x,0, z);
+
+		glPushMatrix();
+		glTranslatef(x, 0.0, z);
+		glutSolidSphere(10.0, 32, 32);
+		glPopMatrix();
+	}
+	glEnd();
+	
+}
+
+
+//############################################# Stadium chairs
+
+void loadTextureDataFromImage() {
+	chairImage = SOIL_load_image("red_texture.jpg", &chairWidth, &chairHeight, 0, SOIL_LOAD_RGB);
+
+	if (chairImage == NULL) {
 		printf("Error : %s", SOIL_last_result());
 	}
 }
 
-void loadTrackTexture() {
+void loadChairTextures() {
 
-	loadTextureDataFromTrackImage(); // Load pattern into image data array
-	glGenTextures(1, &trackTexture);
-	glBindTexture(GL_TEXTURE_2D, trackTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, trackWidth, trackHeight, 0, GL_RGB,
-		GL_UNSIGNED_BYTE, trackImage);  // Create texture from image data
+	loadTextureDataFromImage(); // Load pattern into image data array
+	glGenTextures(1, &chairTexture);
+	glBindTexture(GL_TEXTURE_2D, chairTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, chairWidth, chairHeight, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, chairImage);  // Create texture from image data
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	SOIL_free_image_data(trackImage);
+	SOIL_free_image_data(chairImage);
 }
 
-void stadiumGround() {
-	glColor3f(0.24, 0.3, 0.3);
-	glPushMatrix();
-	glRotatef(90.0, 1.0, 0.0, 0.0);
-	glTranslatef(0.0, 0.5, 0.0);
-	drawCircle(900.0, 32);
-	glPopMatrix();
-
-	glColor3f(0.01, 0.49, 0.18);
-	glBegin(GL_POLYGON);
-	glVertex3f(475, 0.2, -475);
-	glVertex3f(-475, 0.2, -475);
-	glVertex3f(-475, 0.2, 475);
-	glVertex3f(475, 0.2, 475);
-	glEnd();
-
+void chair() {
 
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, trackTexture);
-	glColor3f(1.0, 1.0, 1.0);
-	glBegin(GL_POLYGON);
-	glTexCoord2f(0.0f, 0.0f); glVertex3f(300, 0.5, -300);
-	glTexCoord2f(1.0f, 0.0f); glVertex3f(-300,0.5, -300);
-	glTexCoord2f(1.0f, 1.0f); glVertex3f(-300, 0.5, 300);
-	glTexCoord2f(0.0f, 1.0f); glVertex3f(300, 0.5, 300);
+	glBindTexture(GL_TEXTURE_2D, chairTexture);
+	glBegin(GL_QUADS);
+	//lowert
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 0.0f, 0.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 0.0f, 0.5f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(1.0f, 1.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, 1.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(0.0f, 1.0f, 1.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, 1.0f, 0.0f);
+
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 0.0f, 0.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, 0.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, 1.0f, 0.0f);
+
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(1.0f, 0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 0.0f, 1.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, 1.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(1.0f, 1.0f, 0.0f);
+
+
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(1.0f, 0.0f, 1.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, 1.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(0.0f, 1.0f, 1.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(0.0f, 1.0f, 1.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, 1.0f, 0.0f);
+
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 
 }
+
+void drawChair() {
+	
+	glPushMatrix();
+	glScalef(4.0, 0.8, 4.0);
+	chair();
+	glPopMatrix();
+
+	glPushMatrix();
+	glScalef(4.0, 6.0, 1.0);
+	chair();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(3.5, 2.0, 0.0);
+	glRotatef(90, 0.0, 0.0, 1.0);
+	drawCylinder(0.6, 9.0);
+	glPopMatrix();
+
+}
+
+void circleChair() {
+	const int numChairs = 80;
+	const int numSets = 6; // Number of chair sets
+	const float chairSpacing = 4;
+	const float circleRadius = 150.0; // Radius of the circle
+
+	for (int setIndex = 0; setIndex < numSets; setIndex++) {
+		float angleIncrement = 360.0 / numChairs; // Angle between chairs
+
+		for (int chairIndex = 0; chairIndex < numChairs; chairIndex++) {
+			float angle = chairIndex * angleIncrement + setIndex * (360.0 / numSets);
+
+			// Convert polar coordinates to Cartesian coordinates
+			float x = circleRadius * cos((angle));
+			float z = circleRadius * sin((angle));
+
+			glPushMatrix();
+			glTranslatef(x, 0.0, z);
+			drawChair();
+			glPopMatrix();
+		}
+	}
+}
+
+void drawChairSet() {
+	GLfloat z = 0;
+	GLfloat y = 5;
+	for (int i = 0; i <= 9; i++) {
+		GLfloat x = -250;
+		for (int j = 0; j <= 90; j++) {
+			glPushMatrix();
+			glTranslatef(x, y, z);
+			drawChair();
+			x += 5;
+			glPopMatrix();
+		}
+		z += 8;
+		y -= 5;
+	}
+}
+
+void stadiumChairs() {
+
+	glPushMatrix();
+	glTranslatef(0.0, 40, 325.0);
+	glRotatef(180.0, 0.0, 1.0, 0.0);
+	drawChairSet();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(0.0, 40.0, -325.0);
+	drawChairSet();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(-325.0, 40.0, 0);
+	glRotatef(90.0, 0.0, 1.0, 0.0);
+	drawChairSet();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(325.0, 40.0, 0);
+	glRotatef(-90.0, 0.0, 1.0, 0.0);
+	drawChairSet();
+	glPopMatrix();
+
+
+
+}
+
+void totalSeatingArea() {
+
+	glPushMatrix();
+	glTranslatef(0.0, 10.0, 0.0);
+	stadiumChairs();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.0, 130.0, 0.0);
+	stadiumChairs();
+	glPopMatrix();
+}
+
+
 
 
 //#############################################  LAMP STRUCTURE ################################################
@@ -277,14 +628,12 @@ void animateLampSecond(int x) {
 }
 
 void animateLampThird(int x) {
-	if (animateThirdFlag && moveThird <=40.0) {
+	if (animateThirdFlag && moveThird <= 40.0) {
 		moveThird += 1;
 		glutPostRedisplay();
 		glutTimerFunc(1000 / 10, animateLampThird, 1.0);
 	}
 }
-
-
 
 void lampbase() {
 	//Large base
@@ -315,14 +664,13 @@ void halfSphere() {
 	glDisable(GL_CLIP_PLANE0);
 }
 
-
 void lampStand() {
 	glPushMatrix();
 	glTranslatef(0.0, -30.0, 0.0);
 
 	glColor3f(1.0, 0.733, 0.36);
 	drawSolidCylinder(10, 15.0);
-	
+
 	glPushMatrix();
 	glColor3f(1.0, 0.733, 0.36);
 	glTranslatef(0.0, 30.0, 0.0);
@@ -349,51 +697,17 @@ void drawLamp() {
 	lampStand();
 	glPopMatrix();
 
-	
-	
-}
 
-//############################################# Top Structure#########################
-void drawTop() {
-	glPushMatrix();
-	glTranslatef(0.0, 120.0, 0.0);
-	drawSolidCylinder(450.0, 100.0);
-	glPopMatrix();
-
-
-	glPushMatrix();
-	glColor3f(0.0, 0.0, 0.0);
-	glTranslatef(0.0, 150.0, 0.0);
-	for (int i = 300; i <= 448; i++) {
-		drawSolidCylinder(i, 2.0);
-	}
-	glPopMatrix();
 
 }
-
-void drawCircleTraingle(double radius, int n) {
-	double angle = 0.0;
-	glBegin(GL_POINTS);
-	for (int c = 0; c <= n; c++) {
-		angle = angle + (2 * PI) / n;
-		double x = radius * cos(angle);
-		double z = radius * sin(angle);
-		glVertex3f(x,0, z);
-
-		glPushMatrix();
-		glTranslatef(x, 0.0, z);
-		glutSolidSphere(10.0, 32, 32);
-		glPopMatrix();
-	}
-	glEnd();
-	
-}
-
 
 //##################################### DRAWING THE STADIUM #######################
 
+
 void OlympicStadium() {
-	drawLand();
+	//drawLand();
+	drawGrassLand();
+	
 
 	glPushMatrix();
 	glTranslatef(0.0, 0.0, 475);
@@ -404,7 +718,8 @@ void OlympicStadium() {
 
 	stadiumGround();
 
-	
+	//drawSeatArea();
+	totalSeatingArea();
 
 	//lamp structure
 	
@@ -414,21 +729,8 @@ void OlympicStadium() {
 
 
 
-	glPushMatrix();
-	glColor3f(1.0, 0.0, 0.0);
-	for (int i = 0; i < 32; i++) {
-		glRotatef(30.0, 0.0, 1.0, 0.0);
-		glutSolidCube(1.0);
-	}
-	glPopMatrix();
-
-
 	glPopMatrix();
 }
-
-
-
-
 
 void display(void) {
 	glEnable(GL_NORMALIZE);
@@ -450,9 +752,6 @@ void display(void) {
 	glPopMatrix();
 
 
-	glPushMatrix();
-	drawCircleTraingle(10.0, 32.0);
-	glPopMatrix();
 
 
 	glPopMatrix();
@@ -470,6 +769,9 @@ void init(void) {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SMOOTH);
 	loadTrackTexture();
+	loadChairTextures();
+	loadGrassTexture();
+	loadCircleLand();
 
 }
 
@@ -483,9 +785,9 @@ void reshape(GLsizei w, GLsizei h) {
 
 void keyboardSpecial(int key, int x, int y) {
 	if (key == GLUT_KEY_UP)
-		camY += 5;
+		camY += 10;
 	if (key == GLUT_KEY_DOWN)
-		camY -= 5;
+		camY -= 10;
 	if (key == GLUT_KEY_LEFT)
 		//camZ+= 0.5;
 		sceTX -= 5;
@@ -498,9 +800,9 @@ void keyboardSpecial(int key, int x, int y) {
 
 void keyboard(unsigned char key, int x, int y) {
 	if (key == 'z')
-		sceTZ -= 5;
+		sceTZ -= 50;
 	if (key == 'Z')
-		sceTZ += 5;
+		sceTZ += 50;
 	if (key == 'x')
 		sceTX -= 5;
 	if (key == 'X')
