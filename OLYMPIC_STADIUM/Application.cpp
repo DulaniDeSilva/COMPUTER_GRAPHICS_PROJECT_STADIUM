@@ -30,9 +30,9 @@ GLfloat openRight = 0.0f;
 GLfloat goUp = 0.0f;
 
 
-
 int animateForthFlag = 0.0;
 int animateFifthFlag = 0.0;
+
 
 
 constexpr float PI = 3.14159265358979323846;
@@ -69,9 +69,23 @@ int symbolWidth, symbolHeight;
 GLuint textureIDLand;
 GLuint topTextureID;
 GLuint towerTexture;
+GLuint fireTextureID;
+
+
+//robot
+int frameNumber = 0;
+GLfloat triRotate = 180.0;
+GLfloat recRotate = 0.0;
+
+GLfloat moveBallX = 0.0f;
+GLfloat moveBallY = 0.0f;
+GLfloat moveBallZ = 0.0f;
+bool movingUp = true;
+
 
 
 //drawing a cylinder: not solid 
+
 void drawCylinder(float radius, float height) {
 	float x = 0;
 	float y = 0;
@@ -91,6 +105,17 @@ void drawCylinder(float radius, float height) {
 	glVertex3f(radius, 0, 0);
 	glVertex3f(radius, height, 0);
 	glEnd();
+}
+
+
+void drawSolidCylinder(float innerRadius,float outerRadius ,float height) {
+	glPushMatrix();
+	glRotatef(90.0, 1.0, 0.0, 0.0);
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricTexture(quad, GL_TRUE);
+	gluCylinder(quad, innerRadius, outerRadius, height, 30,30);
+	gluDeleteQuadric(quad);
+	glPopMatrix();
 }
 
 void drawCube() {
@@ -823,11 +848,215 @@ void totalSeatingArea() {
 	glPopMatrix();
 }
 
+//################################# Shooting structure
+void Rightleg() {
+	glutSolidSphere(1.0, 30.0, 30.0);
+
+	glPushMatrix();
+	glTranslatef(0.0, -4.0, 0.0);
+	glColor3f(1.0, 0.0, 0.0);
+	drawCylinder(1.0, 4.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.0, -4.0, 0.0);
+	glutSolidSphere(1.0, 30.0, 30.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, -4.5, 0.0);
+	glColor3f(1.0, 1.0, 0.0);
+	glRotatef(-triRotate, 0, 0, 1);
+	drawCylinder(1.0, 6.0);
+	glPopMatrix();
+
+}
+
+void LeftLeg() {
+	glutSolidSphere(1.0, 30.0, 30.0);
+
+	glPushMatrix();
+	glTranslatef(0.0, -4.0, 0.0);
+	glColor3f(1.0, 0.0, 0.0);
+	drawCylinder(1.0, 4.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.0, -4.0, 0.0);
+	glutSolidSphere(1.0, 30.0, 30.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, -10, 0.0);
+	glColor3f(1.0, 1.0, 0.0);
+	//glRotatef(-triRotate, 0, 0, 1);
+	drawCylinder(1.0, 6.0);
+	glPopMatrix();
+}
+
+void animateMoveBall(int n) {
+	if (movingUp) {
+		moveBallX += 1;
+		moveBallY += 1;
+		moveBallZ += 1;
+		if (moveBallY ==20) {
+			movingUp = false;
+		}
+	}
+	else {
+		moveBallX += 1;
+		moveBallY -= 1;
+		moveBallZ += 1;
+	}
+	glutPostRedisplay();
+
+	if (!(moveBallY == 0)) {
+		glutTimerFunc(1000 / 2, animateMoveBall, 1.0);
+	}
+
+}
+
+void Robot() {
+	//head
+	glPushMatrix();
+	glTranslatef(0.0, 11.0, 0.0);
+	glutSolidSphere(2.0, 30, 30);
+	glPopMatrix();
+
+	//body
+	glPushMatrix();
+	glTranslatef(0.0, 5.0, 0.0);
+	glRotatef(60, 0.0, 1.0, 0.0);
+	drawCylinder(2.0, 4.0);
+	glPopMatrix();
+
+
+	//left arm 1
+	glPushMatrix();
+	glTranslatef(-2.0, 9.0, 0.0);
+	glRotatef(90.0, 0.0, 0.0, 1.0);
+	drawCylinder(0.8, 2.0);
+	glPopMatrix();
+
+	//rigth arm 1
+	glPushMatrix();
+	glTranslatef(3.5, 9.0, 0.0);
+	glRotatef(90.0, 0.0, 0.0, 1.0);
+	drawCylinder(0.8, 2.0);
+	glPopMatrix();
+
+	//left arm 2
+	glPushMatrix();
+	glTranslatef(-4.0, 6.0, 0.0);
+	drawCylinder(0.8, 2.0);
+	glPopMatrix();
+
+	//rigth arm 2
+	glPushMatrix();
+	glTranslatef(3.5, 6.0, 0.0);
+	drawCylinder(0.8, 2.0);
+	glPopMatrix();
+
+	//rightleg
+	glPushMatrix();
+	//glTranslatef(0.0, 4.0, 1.0);
+	glTranslatef(-1.0, 4.0, 0.0);
+	glRotatef(-recRotate, 0, 0, 1);
+	Rightleg();
+	glPopMatrix();
+
+	//left leg
+	glPushMatrix();
+	glTranslatef(1.0, 4.0, 0.0);
+	//glTranslatef(0.0, 4.0, 1.0);
+	LeftLeg();
+	glPopMatrix();
+
+
+	//ball
+	glPushMatrix();
+	glTranslatef(moveBallX, moveBallY, moveBallZ);
+	glPushMatrix();
+	glTranslatef(3.0, -4.0, 0.0);
+	glutSolidSphere(2.0, 30, 30);
+	glPopMatrix();
+	glPopMatrix();
+}
+
+// ############################  fire
+void loadFireTexture() {
+	fireTextureID = SOIL_load_OGL_texture(
+		"fire.jpg",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+	);
+	if (!fireTextureID) {
+		printf("Texture loading failed:  %s\n", SOIL_last_result());
+	}
+}
+
+
+//structure of one fire pyramid
+void fireStructure() {
+	glEnable(GL_TEXTURE_2D);
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricTexture(quad, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, fireTextureID);
+	glColor3f(1.0, 1.0, 1.0);
+	gluCylinder(quad, 20, 2, 80, 30, 30);
+	gluDeleteQuadric(quad);
+	glDisable(GL_TEXTURE_2D);
+}
+
+void fire() {
+	glPushMatrix();
+	glRotatef(30.0, 0.0, 1.0, 0.0);
+	fireStructure();
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-30.0, 0.0, 1.0, 0.0);
+	fireStructure();
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-60.0, 0.0, 1.0, 0.0);
+	fireStructure();
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(60.0, 0.0, 1.0, 0.0);
+	fireStructure();
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-30.0, 1.0, 0.0, 0.0);
+	fireStructure();
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(30.0, 1.0, 0.0, 0.0);
+	fireStructure();
+	glPopMatrix();
+
+
+
+
+
+	fireStructure();
+
+
+}
+
+
+
+
 
 //#############################################  LAMP STRUCTURE ################################################
 void animateLampBase(int x) {
-	if (animateBaseFlag && moveBase <= 10.0) {
-		moveBase += 0.1;
+	if (animateBaseFlag && moveBase <= 20.0) {
+		moveBase += 1.0;
 		glutPostRedisplay();
 		glutTimerFunc(1000 / 10, animateLampBase, 1.0);
 	}
@@ -835,16 +1064,16 @@ void animateLampBase(int x) {
 }
 
 void animateLampSecond(int x) {
-	if (animateSecondFlag && moveSecond <= 15.0) {
-		moveSecond += 0.2;
+	if (animateSecondFlag && moveSecond <= 20.0) {
+		moveSecond += 1.0;
 		glutPostRedisplay();
 		glutTimerFunc(1000 / 10, animateLampSecond, 1.0);
 	}
 }
 
 void animateLampThird(int x) {
-	if (animateThirdFlag && moveThird <= 40.0) {
-		moveThird += 1;
+	if (animateThirdFlag && moveThird <= 50.0) {
+		moveThird += 1.0;
 		glutPostRedisplay();
 		glutTimerFunc(1000 / 10, animateLampThird, 1.0);
 	}
@@ -855,7 +1084,8 @@ void lampbase() {
 	glPushMatrix();
 	glColor3f(1, 0.733, 0.36);
 	glTranslatef(0.0, -10.0, 0.0);
-	drawSolidCylinder(50, 10.0);
+	drawSolidCylinder(0.0, 50.0, 10.0);
+	//drawSolidCylinder(50, 10.0);
 	glPopMatrix();
 }
 
@@ -864,7 +1094,8 @@ void secondbase() {
 	glPushMatrix();
 	glColor3f(1.0, 0.0, 0.0);
 	glTranslatef(0.0, -5.0, 0.0);
-	drawSolidCylinder(30, 5.0);
+	drawSolidCylinder(0.0, 30.0, 5.0);
+	//drawSolidCylinder(30, 5.0);
 	glPopMatrix();
 
 }
@@ -877,21 +1108,35 @@ void halfSphere() {
 	glutSolidSphere(20.0, 100, 100);
 	glPopMatrix();
 	glDisable(GL_CLIP_PLANE0);
+
 }
 
 void lampStand() {
 	glPushMatrix();
-	glTranslatef(0.0, -30.0, 0.0);
+	glTranslatef(0.0, -32.0, 0.0);
 
-	glColor3f(1.0, 0.733, 0.36);
-	drawSolidCylinder(10, 15.0);
+
+	glPushMatrix();
+	glTranslatef(0.0, 18.0, 0.0);
+	glScalef(0.2, 0.2, 0.2);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	fire();
+	glPopMatrix();
 
 	glPushMatrix();
 	glColor3f(1.0, 0.733, 0.36);
-	glTranslatef(0.0, 30.0, 0.0);
+	glTranslatef(0.0, 20.0, 0.0);
 	glRotatef(180.0, 0.0, 0.0, 1.0);
 	halfSphere();
 	glPopMatrix();
+
+
+	glPushMatrix();
+	glColor3f(1.0, 0.733, 0.36);
+	drawSolidCylinder(5.0, 10.0, 25.0);
+	//drawSolidCylinder(10, 15.0);
+	glPopMatrix();
+
 	glPopMatrix();
 
 }
@@ -911,8 +1156,6 @@ void drawLamp() {
 	glTranslatef(0.0, moveThird, 0.0);
 	lampStand();
 	glPopMatrix();
-
-
 
 }
 
@@ -1101,80 +1344,6 @@ void symbolHolder() {
 	glDisable(GL_TEXTURE_2D);
 }
 
-//################################# Shooting structure
-void robot(){
-	//head
-	glPushMatrix();
-	glTranslatef(0.0, 11.0, 0.0);
-	glutSolidSphere(2.0, 30, 30);
-	glPopMatrix();
-
-	//body
-	glPushMatrix();
-	glTranslatef(0.0, 5.0, 0.0);
-	drawSolidCylinder(2.0, 4.0);
-	glPopMatrix();
-
-
-	//left arm 1
-	glPushMatrix();
-	glTranslatef(-2.0, 9.0, 0.0);
-	glRotatef(90.0, 0.0, 0.0, 1.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//rigth arm 1
-	glPushMatrix();
-	glTranslatef(3.5, 9.0, 0.0);
-	glRotatef(90.0, 0.0, 0.0, 1.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//left arm 2
-	glPushMatrix();
-	glTranslatef(-4.0, 6.0, 0.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//rigth arm 2
-	glPushMatrix();
-	glTranslatef(3.5,6.0, 0.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-
-	//left leg 1
-	glPushMatrix();
-	glTranslatef(-1.0, 3.0, 0.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//right leg 1
-	glPushMatrix();
-	glTranslatef(1.0, 3.0, 0.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//left leg 2
-	glPushMatrix();
-	glTranslatef(-1.0, 0.0, 0.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//right leg 2
-	glPushMatrix();
-	glTranslatef(1.0, 0.0, 0.0);
-	drawSolidCylinder(0.8, 2.0);
-	glPopMatrix();
-
-	//ball
-	glPushMatrix();
-	glTranslatef(5.0, 2.0, 0.0);
-	glutSolidSphere(2.0, 30, 30);
-	glPopMatrix();
-}
-
-
 
 
 
@@ -1218,9 +1387,9 @@ void OlympicStadium() {
 	drawCircularFlagSet();
 
 	glPushMatrix();
-	glTranslatef(-50.0, 0.0, -50.0);
-	glScalef(4.0, 4.0, 4.0);
-	robot();
+	glTranslatef(-200.0, 20.0, -200.0);
+	glScalef(5.0, 5.0, 5.0);
+	Robot();
 	glPopMatrix();
 
 
@@ -1242,9 +1411,10 @@ void display(void) {
 	glRotatef(sceRY, 0.0, 1.0, 0.0);
 	glRotatef(objRY, 0.0, 1.0, 0.0);
 	glColor3f(1.0, 1.0, 1.0);
+	drawGrid();
+
 	drawAxes();
-
-
+	
 	glPushMatrix();
 	OlympicStadium();
 	glPopMatrix();
@@ -1274,6 +1444,7 @@ void init(void) {
 	loadCircleLand();
 	loadWallTexture();
 	loadSymbolTexture();
+	loadFireTexture();
 
 }
 
@@ -1366,6 +1537,22 @@ void keyboard(unsigned char key, int x, int y) {
 			goUp -= 10;
 		}
 	}
+	if (key == 'o') {
+		frameNumber++;
+		if (frameNumber < 45) {
+			recRotate+=1;
+			triRotate+=1;
+		}
+		if (frameNumber >= 45) {
+			recRotate-=1;
+		}
+		if (recRotate == 0) {
+			recRotate = 0;
+			triRotate = 160;
+			frameNumber = 0;
+		}
+	}
+
 
 
 
@@ -1386,7 +1573,7 @@ int main(void) {
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	init();
-
+	glutTimerFunc(1000 / 60, animateMoveBall, 1.0);
 	glutMainLoop();
 	return 0;
 }
