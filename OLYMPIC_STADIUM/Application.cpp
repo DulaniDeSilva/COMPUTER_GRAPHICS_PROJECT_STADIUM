@@ -34,6 +34,9 @@ int animateForthFlag = 0.0;
 int animateFifthFlag = 0.0;
 
 
+//animate deco
+GLfloat rotateGlobe = 0.0f;
+
 
 constexpr float PI = 3.14159265358979323846;
 
@@ -66,10 +69,25 @@ unsigned char* symbolImage;
 GLuint symbolTexture;
 int symbolWidth, symbolHeight;
 
+unsigned char* roadImage;
+GLuint roadTexture;
+int roadWidth, roadHeight;
+
+unsigned char* doorImage;
+GLuint doorTexture;
+int doorWidth, doorHeight;
+
+
+unsigned char* flagImage;
+GLuint flagTexture;
+int flagWidth;
+int flagHeight;
+
 GLuint textureIDLand;
 GLuint topTextureID;
 GLuint towerTexture;
 GLuint fireTextureID;
+GLuint worldID;
 
 
 //robot
@@ -81,6 +99,7 @@ GLfloat moveBallX = 0.0f;
 GLfloat moveBallY = 0.0f;
 GLfloat moveBallZ = 0.0f;
 bool movingUp = true;
+
 
 
 
@@ -313,6 +332,8 @@ void loadCircleLand() {
 
 
 void stadiumGround() {
+
+	//gray land
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	GLUquadric* qaud = gluNewQuadric();
@@ -326,6 +347,7 @@ void stadiumGround() {
 	glPopMatrix();
 
 
+	//green land
 	glColor3f(0.01, 0.49, 0.18);
 	glBegin(GL_POLYGON);
 	glVertex3f(475, 0.2, -475);
@@ -335,6 +357,7 @@ void stadiumGround() {
 	glEnd();
 
 
+	//track land
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, trackTexture);
 	glColor3f(1.0, 1.0, 1.0);
@@ -345,11 +368,70 @@ void stadiumGround() {
 	glTexCoord2f(0.0f, 1.0f); glVertex3f(300, 0.5, 300);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
+	
+
+	//front road
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, chairTexture);
+	glTranslatef(-50.0, 1.0, 500.0);
+	glScalef(100.0, 5.0, 500.0);
+	drawCube();
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
 
 }
 
 
 //############################################   STADIUM FRONT WALLS AND DOOR #################################
+void loadTextureDataFromDoorImage() {
+	doorImage = SOIL_load_image("dooor.jpeg", &doorWidth, &doorHeight, 0, SOIL_LOAD_RGB);
+
+	if (doorImage == NULL) {
+		printf("Error : %s", SOIL_last_result());
+	}
+}
+
+void loadDoorTexture() {
+
+	loadTextureDataFromDoorImage(); // Load pattern into image data array
+	glGenTextures(1, &doorTexture);
+	glBindTexture(GL_TEXTURE_2D, doorTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, doorWidth, doorHeight, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, doorImage);  // Create texture from image data
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	SOIL_free_image_data(doorImage);
+}
+
+void drawDoor() {
+	//Left dooor
+	glEnable(GL_TEXTURE_2D);
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, doorTexture);
+	//glColor3f(0.76, 0.50, 0.32);
+	glTranslated(-25.0, 30.0, 0.0);
+	glRotatef(doorRotate, 0.0, 1.0, 0.0);
+	glTranslated(25.0, 0.0, 0.0);
+	glScaled(50.0, 60.0, 5.0);
+	glutSolidCube(1.0);
+	glPopMatrix();
+
+	//right door
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, doorTexture);
+	glTranslated(25.0, 30.0, 0.0);
+	glRotatef(-doorRotate, 0.0, 1.0, 0.0);
+	glTranslated(-25.0, 0.0, 0.0);
+	glScaled(50.0, 60.0, 5.0);
+	glColor3f(1.0, 1.0, 1.0);
+;	glutSolidCube(1.0);
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+
+}
 
 void loadTextureDataFromWallImage() {
 	wallImage = SOIL_load_image("wall11.jpg", &wallWidth, &wallHeight, 0, SOIL_LOAD_RGB);
@@ -371,29 +453,6 @@ void loadWallTexture() {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	SOIL_free_image_data(wallImage);
-}
-
-void drawDoor() {
-	//Left dooor
-	glPushMatrix();
-	//glColor3f(0.76, 0.50, 0.32);
-	glTranslated(-25.0, 30.0, 0.0);
-	glRotatef(doorRotate, 0.0, 1.0, 0.0);
-	glTranslated(25.0, 0.0, 0.0);
-	glScaled(50.0, 60.0, 5.0);
-	glutSolidCube(1.0);
-	glPopMatrix();
-
-	//right door
-	glPushMatrix();
-	//glColor3f(0.76, 0.50, 0.32);
-	glTranslated(25.0, 30.0, 0.0);
-	glRotatef(-doorRotate, 0.0, 1.0, 0.0);
-	glTranslated(-25.0, 0.0, 0.0);
-	glScaled(50.0, 60.0, 5.0);
-	glutSolidCube(1.0);
-	glPopMatrix();
-
 }
 
 void frontWall() {
@@ -544,25 +603,6 @@ void drawTop() {
 
 
 
-}
-
-
-void drawCircleTraingle(double radius, int n) {
-	double angle = 0.0;
-	glBegin(GL_POINTS);
-	for (int c = 0; c <= n; c++) {
-		angle = angle + (2 * PI) / n;
-		double x = radius * cos(angle);
-		double z = radius * sin(angle);
-		glVertex3f(x,0, z);
-
-		glPushMatrix();
-		glTranslatef(x, 0.0, z);
-		glutSolidSphere(10.0, 32, 32);
-		glPopMatrix();
-	}
-	glEnd();
-	
 }
 
 //################################## LARGE TOWERS
@@ -850,22 +890,24 @@ void totalSeatingArea() {
 
 //################################# Shooting structure
 void Rightleg() {
+	glColor3f(0.16, 0.17, 0.42);
 	glutSolidSphere(1.0, 30.0, 30.0);
 
 	glPushMatrix();
 	glTranslatef(0.0, -4.0, 0.0);
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3f(0.16, 0.17, 0.42);
 	drawCylinder(1.0, 4.0);
 	glPopMatrix();
 
 	glPushMatrix();
+	glColor3f(0.98, 0.92, 0.94);
 	glTranslatef(0.0, -4.0, 0.0);
 	glutSolidSphere(1.0, 30.0, 30.0);
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(0, -4.5, 0.0);
-	glColor3f(1.0, 1.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glRotatef(-triRotate, 0, 0, 1);
 	drawCylinder(1.0, 6.0);
 	glPopMatrix();
@@ -873,22 +915,24 @@ void Rightleg() {
 }
 
 void LeftLeg() {
+	glColor3f(0.16, 0.17, 0.42);
 	glutSolidSphere(1.0, 30.0, 30.0);
 
 	glPushMatrix();
 	glTranslatef(0.0, -4.0, 0.0);
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3f(0.16, 0.17, 0.42);
 	drawCylinder(1.0, 4.0);
 	glPopMatrix();
 
 	glPushMatrix();
+	glColor3f(0.98, 0.92, 0.94);
 	glTranslatef(0.0, -4.0, 0.0);
 	glutSolidSphere(1.0, 30.0, 30.0);
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(0, -10, 0.0);
-	glColor3f(1.0, 1.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	//glRotatef(-triRotate, 0, 0, 1);
 	drawCylinder(1.0, 6.0);
 	glPopMatrix();
@@ -919,12 +963,14 @@ void animateMoveBall(int n) {
 void Robot() {
 	//head
 	glPushMatrix();
+	glColor3f(0.85, 0.41, 0.59);
 	glTranslatef(0.0, 11.0, 0.0);
 	glutSolidSphere(2.0, 30, 30);
 	glPopMatrix();
 
 	//body
 	glPushMatrix();
+	glColor3f(0.98, 0.92, 0.94);
 	glTranslatef(0.0, 5.0, 0.0);
 	glRotatef(60, 0.0, 1.0, 0.0);
 	drawCylinder(2.0, 4.0);
@@ -933,6 +979,7 @@ void Robot() {
 
 	//left arm 1
 	glPushMatrix();
+	glColor3f(0.85, 0.41, 0.59);
 	glTranslatef(-2.0, 9.0, 0.0);
 	glRotatef(90.0, 0.0, 0.0, 1.0);
 	drawCylinder(0.8, 2.0);
@@ -940,6 +987,7 @@ void Robot() {
 
 	//rigth arm 1
 	glPushMatrix();
+	glColor3f(0.85, 0.41, 0.59);
 	glTranslatef(3.5, 9.0, 0.0);
 	glRotatef(90.0, 0.0, 0.0, 1.0);
 	drawCylinder(0.8, 2.0);
@@ -947,12 +995,14 @@ void Robot() {
 
 	//left arm 2
 	glPushMatrix();
+	glColor3f(0.85, 0.41, 0.59);
 	glTranslatef(-4.0, 6.0, 0.0);
 	drawCylinder(0.8, 2.0);
 	glPopMatrix();
 
 	//rigth arm 2
 	glPushMatrix();
+	glColor3f(0.85, 0.41, 0.59);
 	glTranslatef(3.5, 6.0, 0.0);
 	drawCylinder(0.8, 2.0);
 	glPopMatrix();
@@ -1094,7 +1144,7 @@ void secondbase() {
 	glPushMatrix();
 	glColor3f(1.0, 0.0, 0.0);
 	glTranslatef(0.0, -5.0, 0.0);
-	drawSolidCylinder(0.0, 30.0, 5.0);
+	drawSolidCylinder(15.0, 30.0, 5.0);
 	//drawSolidCylinder(30, 5.0);
 	glPopMatrix();
 
@@ -1133,7 +1183,7 @@ void lampStand() {
 
 	glPushMatrix();
 	glColor3f(1.0, 0.733, 0.36);
-	drawSolidCylinder(5.0, 10.0, 25.0);
+	drawSolidCylinder(5.0, 15.0, 25.0);
 	//drawSolidCylinder(10, 15.0);
 	glPopMatrix();
 
@@ -1161,12 +1211,38 @@ void drawLamp() {
 
 //##################################### Elevator structure
 
+
+void elivatorHolder() {
+	glPushMatrix();
+	//glColor3f(0.93, 0.93, 0.93);
+	glColor3f(0.098, 0.15, 0.18);
+	glTranslatef(0.0, 0.0, -80.0);
+	glScalef(5.0, 280.0, 80.0);
+	drawCube();
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0.098, 0.15, 0.18);
+	glTranslatef(40.0, 0.0, -80.0);
+	glScalef(5.0, 280.0, 80.0);
+	drawCube();
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0.0, 0.0, 0.0);
+	glTranslatef(0.0, 280.0, -80.0);
+	glScalef(40.0, 5.0, 80.0);
+	drawCube();
+	glPopMatrix();
+
+}
+
 void drawElivator() {
 
 	glPushMatrix();
 	glTranslatef(openLeft, 0.0, 0.0);
 	glPushMatrix();
-	glColor3f(0.0, 1.0, 1.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glScalef(40.0, 160.0, 5.0);
 	drawCube();
 	glPopMatrix();
@@ -1176,7 +1252,7 @@ void drawElivator() {
 	glPushMatrix();
 	glTranslatef(openRight, 0.0, 0.0);
 	glPushMatrix();
-	glColor3f(0.0, 0.0, 1.0);
+	glColor3f(0.70, 0.18, 0.18);
 	glTranslatef(40.0, 0.0, 0.0);
 	glScalef(40.0, 160.0, 5.0);
 	drawCube();
@@ -1184,35 +1260,39 @@ void drawElivator() {
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(0.0, 0.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glTranslatef(0.0, 0.0, -80.0);
 	glScalef(80.0, 160.0, 5.0);
 	drawCube();
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(0.0, 0.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glTranslatef(0.0, 0.0, -80.0);
 	glScalef(5.0, 160.0, 80.0);
 	drawCube();
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(0.0, 0.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glTranslatef(80.0, 0.0, -80.0);
 	glScalef(5.0, 160.0, 80.0);
 	drawCube();
 	glPopMatrix();
 
+
+
+
+
 	glPushMatrix();
-	glColor3f(0.0, 0.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glTranslatef(0.0, 160.0, -80.0);
 	glScalef(80.0, 5.0, 80.0);
 	drawCube();
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(0.0, 0.0, 0.0);
+	glColor3f(1.0, 1.0, 1.0);
 	glTranslatef(0.0, 0.0, -80.0);
 	glScalef(80.0, 5.0, 80.0);
 	drawCube();
@@ -1223,6 +1303,12 @@ void drawElivator() {
 void fourElivators() {
 
 	glPushMatrix();
+	glTranslatef(250, 0.0, -300.0);
+	glRotatef(-45.0, 0.0, 1.0, 0.0);
+	elivatorHolder();
+	glPopMatrix();
+
+	glPushMatrix();
 	glTranslatef(0.0, goUp, 0.0);
 	glPushMatrix();
 	glTranslatef(250, 0.0, -300.0);
@@ -1230,6 +1316,14 @@ void fourElivators() {
 	glScalef(0.5, 0.5, 0.5);
 	drawElivator();
 	glPopMatrix();
+	glPopMatrix();
+
+
+
+	glPushMatrix();
+	glTranslatef(-300, 0.0, -250.0);
+	glRotatef(45.0, 0.0, 1.0, 0.0);
+	elivatorHolder();
 	glPopMatrix();
 
 
@@ -1243,6 +1337,14 @@ void fourElivators() {
 	glPopMatrix();
 	glPopMatrix();
 
+
+
+	glPushMatrix();
+	glTranslatef(-200, 0.0, 250.0);
+	glRotatef(135.0, 0.0, 1.0, 0.0);
+	elivatorHolder();
+	glPopMatrix();
+
 	glPushMatrix();
 	glTranslatef(0.0, goUp, 0.0);
 	glPushMatrix();
@@ -1251,6 +1353,13 @@ void fourElivators() {
 	glScalef(0.5, 0.5, 0.5);
 	drawElivator();
 	glPopMatrix();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(300, 0.0, 250.0);
+	glRotatef(225.0, 0.0, 1.0, 0.0);
+	elivatorHolder();
 	glPopMatrix();
 
 	glPushMatrix();
@@ -1344,7 +1453,175 @@ void symbolHolder() {
 	glDisable(GL_TEXTURE_2D);
 }
 
+//####################################  Flags
 
+
+void loadTextureDataFromFlagImage() {
+	flagImage = SOIL_load_image("flag1.jpg", &flagWidth, &flagHeight, 0, SOIL_LOAD_RGB);
+
+	if (flagImage == NULL) {
+		printf("Error : %s", SOIL_last_result());
+	}
+}
+
+void loadFlagTexture() {
+
+	loadTextureDataFromFlagImage(); // Load pattern into image data array
+	glGenTextures(1, &flagTexture);
+	glBindTexture(GL_TEXTURE_2D, flagTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, flagWidth, flagHeight, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, flagImage);  // Create texture from image data
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	SOIL_free_image_data(flagImage);
+}
+
+void Flags() {
+	
+	glPushMatrix();
+	glColor3f(0.6, 0.6, 0.3);
+	glTranslatef(20.0, 200.0, 2.0);
+	drawSolidCylinder(2, 2, 200);
+	glPopMatrix();
+
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, flagTexture);
+	glColor3f(1.0, 1.0, 1.0);
+	glTranslatef(22.0, 150.0, 2.0);
+	glScalef(80.0, 40.0, 2.0);
+	drawCube();
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+}
+
+void flagset() {
+	glPushMatrix();
+	glScalef(400.0, 5.0, 10.0);
+	drawCube();
+	glPopMatrix();
+
+
+	Flags();
+
+
+	glPushMatrix();
+	glTranslatef(100.0, 0.0, 0.0);
+	Flags();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(200.0, 0.0, 0.0);
+	Flags();
+	glPopMatrix();
+
+
+
+
+	
+
+	
+}
+
+
+//################################# other items
+void animateDeco(int n) {
+	rotateGlobe++;
+	glutPostRedisplay();
+	glutTimerFunc(16, animateDeco, 1);
+}
+
+void loadDecoTexture() {
+	worldID = SOIL_load_OGL_texture(
+		"world.jpg",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+	);
+	if (!worldID) {
+		printf("Texture loading failed: %s\n", SOIL_last_result());
+	}
+}
+
+void decorator() {
+
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, wallTexture);
+	glTranslatef(-50.0, -50.0, -50.0);
+	glScalef(100.0, 100.0, 100.0);
+	glColor3f(1.0, 1.0, 1.0);
+	drawCube();
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, 50.0);
+	drawOlympicSymbol();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(0.0, 100.0, 0.0);
+	glEnable(GL_TEXTURE_2D);
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricTexture(quad, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, worldID);
+	glColor3f(1.0, 1.0, 1.0);
+	gluPartialDisk(quad, 10.0, 50.0, 30.0, 10.0, 10, 270);
+	glPushMatrix();
+	glPushMatrix();
+	glRotatef(rotateGlobe, 0.0, 1.0, 0.0);
+	glTranslatef(-5.0, 20.0, 0.0);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	gluSphere(quad, 20, 30.0, 30.0);
+	glPopMatrix();
+	glPopMatrix();
+	gluDeleteQuadric(quad);
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+//################### roads
+void loadTextureDataFromRoadImage() {
+	roadImage = SOIL_load_image("road.jpeg", &roadWidth, &roadHeight, 0, SOIL_LOAD_RGB);
+
+	if (roadImage == NULL) {
+		printf("Error : %s", SOIL_last_result());
+	}
+}
+
+void loadRoadTexture() {
+
+	loadTextureDataFromRoadImage(); // Load pattern into image data array
+	glGenTextures(1, &roadTexture);
+	glBindTexture(GL_TEXTURE_2D, roadTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, roadWidth, roadHeight, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, roadImage);  // Create texture from image data
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	SOIL_free_image_data(roadImage);
+}
+
+void drawRoads() {
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, roadTexture);
+	glTranslatef(0.0, 10.0, 1400.0);
+	glScalef(1600.0, 2.0, 50.0);
+	glColor3f(1.0, 1.0, 1.0);
+	drawCube();
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+
+
+}
 
 
 //##################################### DRAWING THE STADIUM #######################
@@ -1392,8 +1669,23 @@ void OlympicStadium() {
 	Robot();
 	glPopMatrix();
 
-
 	fourElivators();
+
+	glPushMatrix();
+	glTranslatef(100.0, 0.0, 500.0);
+	flagset();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(-400.0, 50.0, 700.0);
+	glRotatef(60.0, 0.0, 1.0, 0.0);
+	decorator();
+	glPopMatrix();
+
+	glPushMatrix();
+	drawRoads();
+	glPopMatrix();
 
 	glPopMatrix();
 }
@@ -1405,13 +1697,13 @@ void display(void) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPushMatrix();
-	gluLookAt(0.0 + camX, 0.0 + camY, 150.0 + camZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0.0 + camX, 0.0 + camY, 90.0 + camZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	glTranslatef(sceTX, sceTY, sceTZ);
 	glRotatef(sceRY, 0.0, 1.0, 0.0);
 	glRotatef(objRY, 0.0, 1.0, 0.0);
 	glColor3f(1.0, 1.0, 1.0);
-	drawGrid();
+	//drawGrid();
 
 	drawAxes();
 	
@@ -1445,6 +1737,10 @@ void init(void) {
 	loadWallTexture();
 	loadSymbolTexture();
 	loadFireTexture();
+	loadFlagTexture();
+	loadDecoTexture();
+	loadRoadTexture();
+	loadDoorTexture();
 
 }
 
@@ -1528,7 +1824,7 @@ void keyboard(unsigned char key, int x, int y) {
 		}
 	}
 	if (key == '6') {
-		if (goUp != 300) {
+		if (goUp != 205) {
 			goUp += 10;
 		}
 	}
@@ -1574,6 +1870,7 @@ int main(void) {
 	glutReshapeFunc(reshape);
 	init();
 	glutTimerFunc(1000 / 60, animateMoveBall, 1.0);
+	glutTimerFunc(16, animateDeco, 1);
 	glutMainLoop();
 	return 0;
 }
