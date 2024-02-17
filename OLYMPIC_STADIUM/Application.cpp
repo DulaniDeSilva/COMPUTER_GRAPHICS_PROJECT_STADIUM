@@ -119,6 +119,7 @@ void setlighting() {
 	GLfloat qaSunlight[] = { 1.0, 1.0, 0.6, 0.0 };
 	GLfloat qaWhite[] = { 1.0, 1.0, 1.0, 1.0 };
 	
+	
 	//evening
 	GLfloat qaEveYellow[] = { 0.94, 0.92, 0.34, 0.0 };
 	GLfloat qaEveRed[] = { 0.57, 0.19, 0.19, 0.0};
@@ -131,7 +132,6 @@ void setlighting() {
 	GLfloat qaLightPosition2[] = { 800.0, 500.0, 800.0, 1.0 };
 	GLfloat qaLightPosition3[] = { -2000.0, -1200.0, 2000.0, 0.0 };
 	
-
 	//spot light
 	GLfloat dir1[] = { 0.0, 16.0, 0.0, 1.0 };
 	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, dir1);
@@ -146,15 +146,9 @@ void setlighting() {
 	glLightfv(GL_LIGHT1, GL_POSITION, qaLightPosition0);
 
 	glLightfv(GL_LIGHT2, GL_AMBIENT, qaEveBlue);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaSunlight);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaEveBlue);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaEveYellow);
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaEveBlue);
 	glLightfv(GL_LIGHT2, GL_SPECULAR, qaSunlight);
 	glLightfv(GL_LIGHT2, GL_POSITION, qaLightPosition3);
-
-
-
 
 }
 
@@ -1407,7 +1401,7 @@ void drawElivator() {
 	glPushMatrix();
 	glTranslatef(openLeft, 0.0, 0.0);
 	glPushMatrix();
-	glColor3f(1.0, 1.0, 1.0);
+	glColor3f(0.0, 0.27, 0.67);
 	glScalef(40.0, 160.0, 5.0);
 	drawCube();
 	glPopMatrix();
@@ -1883,7 +1877,7 @@ void display(void) {
 	glColor3f(1.0, 1.0, 1.0);
 	//drawGrid();
 
-	drawAxes();
+	//drawAxes();
 	
 	setlighting();
 
@@ -1892,10 +1886,6 @@ void display(void) {
 	glPopMatrix();
 
 
-	
-
-
-	
 	glPopMatrix();
 	glutSwapBuffers();
 	glDisable(GL_COLOR_MATERIAL);
@@ -1905,8 +1895,8 @@ void display(void) {
 
 
 void init(void) {
-	glClearColor(0.0, 0.74, 1.0, 1.0);
-	//glClearColor(0.1, 0.1, 0.33, 1.0);
+	//glClearColor(0.0, 0.74, 1.0, 1.0);
+	glClearColor(0.1, 0.1, 0.33, 1.0);
 	glClearDepth(1.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SMOOTH);
