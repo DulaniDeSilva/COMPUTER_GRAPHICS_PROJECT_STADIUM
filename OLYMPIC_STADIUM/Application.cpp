@@ -32,7 +32,9 @@ GLfloat goUp = 0.0f;
 
 int animateForthFlag = 0.0;
 int animateFifthFlag = 0.0;
-
+GLfloat oscialteRods = 0.0;
+int animateRodsFlag = 0.0;
+GLfloat moveRods = 0.0;
 
 //animate deco
 GLfloat rotateGlobe = 0.0f;
@@ -46,6 +48,7 @@ GLfloat moveSecond;
 GLfloat moveThird;
 int animateBaseFlag = 0.0;
 int animateSecondFlag = 0.0;
+int animateBallFlag = 0.0;
 int moveLampStand = 0.0;
 int animateThirdFlag = 0.0;
 
@@ -88,6 +91,8 @@ GLuint topTextureID;
 GLuint towerTexture;
 GLuint fireTextureID;
 GLuint worldID;
+GLuint 	shinnyBlueTextureID;
+GLuint shinnyGreenTextureID;
 
 
 //robot
@@ -100,8 +105,58 @@ GLfloat moveBallY = 0.0f;
 GLfloat moveBallZ = 0.0f;
 bool movingUp = true;
 
+//lighting
+void setlighting() {
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	glEnable(GL_LIGHTING);
+	GLfloat qaAmibinetLight[] = { 0.2, 0.2, 0.2, 1.0 };
+	GLfloat qaDiffuseLight[] = { 0.8, 0.8, 0.8, 1.0 };
+	GLfloat qaSpecularLight[] = { 1.0, 1.0, 1.0, 1.0 };
+
+	GLfloat qaRed[] = { 1.0, 0.0, 0.0, 1.0 };
+	GLfloat qaBlue[] = { 0.0, 0.0, 1.0, 1.0 };
+	GLfloat qaGreen[] = { 0.0, 1.0, 0.0, 1.0 };
+	GLfloat qaSunlight[] = { 1.0, 1.0, 0.6, 0.0 };
+	GLfloat qaWhite[] = { 1.0, 1.0, 1.0, 1.0 };
+	
+	//evening
+	GLfloat qaEveYellow[] = { 0.94, 0.92, 0.34, 0.0 };
+	GLfloat qaEveRed[] = { 0.57, 0.19, 0.19, 0.0};
+	GLfloat qaEveGreen[] = { 0.09, 0.62, 0.55, 0.0 };
+	GLfloat qaEveBlue[] = { 0.094, 0.27, 0.47, 0.0 };
 
 
+	GLfloat qaLightPosition0[] = { -800.0, 500.0, -800.0, 1.0 };
+	GLfloat qaLightPosition1[] = { -800.0, 500.0, 800.0, 1.0 };
+	GLfloat qaLightPosition2[] = { 800.0, 500.0, 800.0, 1.0 };
+	GLfloat qaLightPosition3[] = { -2000.0, -1200.0, 2000.0, 0.0 };
+	
+
+	//spot light
+	GLfloat dir1[] = { 0.0, 16.0, 0.0, 1.0 };
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, dir1);
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 100);
+	glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 4.0);
+
+
+	//side light
+	glLightfv(GL_LIGHT1, GL_AMBIENT, qaWhite);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, qaDiffuseLight);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, qaWhite);
+	glLightfv(GL_LIGHT1, GL_POSITION, qaLightPosition0);
+
+	glLightfv(GL_LIGHT2, GL_AMBIENT, qaEveBlue);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaSunlight);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaEveBlue);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaEveYellow);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, qaEveBlue);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, qaSunlight);
+	glLightfv(GL_LIGHT2, GL_POSITION, qaLightPosition3);
+
+
+
+
+}
 
 //drawing a cylinder: not solid 
 
@@ -125,7 +180,6 @@ void drawCylinder(float radius, float height) {
 	glVertex3f(radius, height, 0);
 	glEnd();
 }
-
 
 void drawSolidCylinder(float innerRadius,float outerRadius ,float height) {
 	glPushMatrix();
@@ -939,25 +993,27 @@ void LeftLeg() {
 }
 
 void animateMoveBall(int n) {
-	if (movingUp) {
-		moveBallX += 1;
-		moveBallY += 1;
-		moveBallZ += 1;
-		if (moveBallY ==20) {
-			movingUp = false;
+	if (animateBallFlag) {
+		if (movingUp) {
+			moveBallX += 1;
+			moveBallY += 1;
+			moveBallZ += 1;
+			if (moveBallY == 20) {
+				movingUp = false;
+			}
+		}
+		else {
+			moveBallX += 1;
+			moveBallY -= 1;
+			moveBallZ += 1;
+		}
+		glutPostRedisplay();
+
+		if (!(moveBallY == 0)) {
+			glutTimerFunc(1000 / 60, animateMoveBall, 1.0);
 		}
 	}
-	else {
-		moveBallX += 1;
-		moveBallY -= 1;
-		moveBallZ += 1;
-	}
-	glutPostRedisplay();
-
-	if (!(moveBallY == 0)) {
-		glutTimerFunc(1000 / 2, animateMoveBall, 1.0);
-	}
-
+	
 }
 
 void Robot() {
@@ -970,7 +1026,8 @@ void Robot() {
 
 	//body
 	glPushMatrix();
-	glColor3f(0.98, 0.92, 0.94);
+	glColor3f(0.87, 1.0, 0.0);
+	//glColor3f(0.98, 0.92, 0.94);
 	glTranslatef(0.0, 5.0, 0.0);
 	glRotatef(60, 0.0, 1.0, 0.0);
 	drawCylinder(2.0, 4.0);
@@ -979,7 +1036,8 @@ void Robot() {
 
 	//left arm 1
 	glPushMatrix();
-	glColor3f(0.85, 0.41, 0.59);
+	glColor3f(0.87, 1.0, 0.0);
+	//glColor3f(0.98, 0.92, 0.94);
 	glTranslatef(-2.0, 9.0, 0.0);
 	glRotatef(90.0, 0.0, 0.0, 1.0);
 	drawCylinder(0.8, 2.0);
@@ -987,7 +1045,8 @@ void Robot() {
 
 	//rigth arm 1
 	glPushMatrix();
-	glColor3f(0.85, 0.41, 0.59);
+	glColor3f(0.87, 1.0, 0.0);
+	//glColor3f(0.98, 0.92, 0.94);
 	glTranslatef(3.5, 9.0, 0.0);
 	glRotatef(90.0, 0.0, 0.0, 1.0);
 	drawCylinder(0.8, 2.0);
@@ -1027,7 +1086,8 @@ void Robot() {
 	glPushMatrix();
 	glTranslatef(moveBallX, moveBallY, moveBallZ);
 	glPushMatrix();
-	glTranslatef(3.0, -4.0, 0.0);
+	glTranslatef(3.0, -2.0, 0.0);
+	glColor3f(1.0, 0.45, 0.094);
 	glutSolidSphere(2.0, 30, 30);
 	glPopMatrix();
 	glPopMatrix();
@@ -1132,7 +1192,6 @@ void animateLampThird(int x) {
 void lampbase() {
 	//Large base
 	glPushMatrix();
-	glColor3f(1, 0.733, 0.36);
 	glTranslatef(0.0, -10.0, 0.0);
 	drawSolidCylinder(0.0, 50.0, 10.0);
 	//drawSolidCylinder(50, 10.0);
@@ -1142,7 +1201,6 @@ void lampbase() {
 void secondbase() {
 	//small base
 	glPushMatrix();
-	glColor3f(1.0, 0.0, 0.0);
 	glTranslatef(0.0, -5.0, 0.0);
 	drawSolidCylinder(15.0, 30.0, 5.0);
 	//drawSolidCylinder(30, 5.0);
@@ -1167,6 +1225,13 @@ void lampStand() {
 
 
 	glPushMatrix();
+	GLfloat SpecRef[] = { 1.0,1.0,1.0, 1.0 };
+	GLfloat gold[] = { 1.0, 0.84, 0, 0.0 };
+	GLfloat Shine = 128;
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gold);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, SpecRef);
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, Shine);
 	glTranslatef(0.0, 18.0, 0.0);
 	glScalef(0.2, 0.2, 0.2);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
@@ -1174,15 +1239,17 @@ void lampStand() {
 	glPopMatrix();
 
 	glPushMatrix();
-	glColor3f(1.0, 0.733, 0.36);
 	glTranslatef(0.0, 20.0, 0.0);
+	glColor3f(1.0, 0.89, 0.41);
 	glRotatef(180.0, 0.0, 0.0, 1.0);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gold);
 	halfSphere();
 	glPopMatrix();
 
 
 	glPushMatrix();
-	glColor3f(1.0, 0.733, 0.36);
+	glColor3f(1.0, 0.89, 0.41);
 	drawSolidCylinder(5.0, 15.0, 25.0);
 	//drawSolidCylinder(10, 15.0);
 	glPopMatrix();
@@ -1193,18 +1260,116 @@ void lampStand() {
 
 void drawLamp() {
 	glPushMatrix();
+	glColor3f(0.85, 0.0, 0.35);
 	glTranslatef(0.0, moveBase, 0.0);
 	lampbase();
 	glPopMatrix();
 
 	glPushMatrix();
+	glColor3f(0.96, 0.57, 0.15);
 	glTranslatef(0.0, moveSecond, 0.0);
 	secondbase();
 	glPopMatrix();
 
 	glPushMatrix();
+	glColor3f(1.0, 0.89, 0.41);
 	glTranslatef(0.0, moveThird, 0.0);
+	glRotatef(rotateGlobe, 0.0, 1.0, 0.0);
 	lampStand();
+	glPopMatrix();
+
+}
+
+void loadShinyBlueTexture() {
+	shinnyBlueTextureID = SOIL_load_OGL_texture(
+		"shinny_blue.jpg",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+	);
+	if (!shinnyBlueTextureID) {
+		printf("Texture loading failed:  %s\n", SOIL_last_result());
+	}
+}
+
+void loadShinyGreenTexture() {
+	shinnyGreenTextureID = SOIL_load_OGL_texture(
+		"flo.jpeg",
+		SOIL_LOAD_AUTO,
+		SOIL_CREATE_NEW_ID,
+		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+	);
+	if (!shinnyGreenTextureID) {
+		printf("Texture loading failed:  %s\n", SOIL_last_result());
+	}
+}
+
+void onerod() {
+	glPushMatrix();
+	glRotatef(-90.0, 1.0 ,0.0, 0.0);
+	glEnable(GL_TEXTURE_2D);
+	GLUquadric* quad2 = gluNewQuadric();
+	gluQuadricTexture(quad2, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, shinnyGreenTextureID);
+	glColor3f(1.0, 1.0, 1.0);
+	gluCylinder(quad2, 2.0, 2.0, 30.0, 30.0, 30.0);
+	gluDeleteQuadric(quad2);
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+void drawDecRods(GLfloat radius) {
+	GLfloat x = 0;
+	GLfloat z = 0;
+	double angle = 0.0;
+	for (int c = 0; c <= 32; c++) {
+		 x = radius * cos(angle);
+		 z = radius * sin(angle);
+		glPushMatrix();
+		glTranslatef(x, 0, z);
+		onerod();
+		glPopMatrix();
+		angle = angle + (2 * PI) / 32;
+	}
+}
+
+void animateRods(int n) {
+		oscialteRods++;
+	if (animateRodsFlag && moveRods <= 40.0) {
+		moveRods += 1.0;
+
+	}
+	glutPostRedisplay();
+	glutTimerFunc(1000 / 60, animateRods, 1.0);
+}
+
+
+void basedecorator() {
+	glPushMatrix();
+	glTranslatef(0.0, moveRods, 0.0);
+
+	glPushMatrix();
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	glEnable(GL_TEXTURE_2D);
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricTexture(quad, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, shinnyBlueTextureID);
+	glColor3f(1.0, 1.0, 1.0);
+	gluCylinder(quad, 1.0, 80.0, 5.0, 30.0, 30.0);
+	gluDeleteQuadric(quad);
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(oscialteRods, 0.0, 1.0, 0.0);
+	drawDecRods(75.0);
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-oscialteRods, 0.0, 1.0, 0.0);
+	drawDecRods(55.0);
+	glPopMatrix();
+
 	glPopMatrix();
 
 }
@@ -1518,6 +1683,11 @@ void flagset() {
 	Flags();
 	glPopMatrix();
 
+	glPushMatrix();
+	glTranslatef(300.0, 0.0, 0.0);
+	Flags();
+	glPopMatrix();
+
 
 
 
@@ -1531,7 +1701,7 @@ void flagset() {
 void animateDeco(int n) {
 	rotateGlobe++;
 	glutPostRedisplay();
-	glutTimerFunc(16, animateDeco, 1);
+	glutTimerFunc(1000/50, animateDeco, 1);
 }
 
 void loadDecoTexture() {
@@ -1547,7 +1717,7 @@ void loadDecoTexture() {
 }
 
 void decorator() {
-
+	/*
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, wallTexture);
@@ -1562,24 +1732,27 @@ void decorator() {
 	glTranslatef(0.0, 0.0, 50.0);
 	drawOlympicSymbol();
 	glPopMatrix();
-
+	*/
 
 	glPushMatrix();
-	glTranslatef(0.0, 100.0, 0.0);
+	glTranslatef(0.0, 30.0, 0.0);
 	glEnable(GL_TEXTURE_2D);
 	GLUquadric* quad = gluNewQuadric();
 	gluQuadricTexture(quad, GL_TRUE);
-	glBindTexture(GL_TEXTURE_2D, worldID);
+	glBindTexture(GL_TEXTURE_2D, wallTexture);
 	glColor3f(1.0, 1.0, 1.0);
 	gluPartialDisk(quad, 10.0, 50.0, 30.0, 10.0, 10, 270);
-	glPushMatrix();
+
+
 	glPushMatrix();
 	glRotatef(rotateGlobe, 0.0, 1.0, 0.0);
-	glTranslatef(-5.0, 20.0, 0.0);
+	glTranslatef(-8.0, 25.0, 0.0);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	glBindTexture(GL_TEXTURE_2D, worldID);
 	gluSphere(quad, 20, 30.0, 30.0);
 	glPopMatrix();
-	glPopMatrix();
+
+
 	gluDeleteQuadric(quad);
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
@@ -1678,13 +1851,18 @@ void OlympicStadium() {
 
 
 	glPushMatrix();
-	glTranslatef(-400.0, 50.0, 700.0);
+	glTranslatef(-400.0, 20.0, 700.0);
 	glRotatef(60.0, 0.0, 1.0, 0.0);
 	decorator();
 	glPopMatrix();
 
 	glPushMatrix();
 	drawRoads();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.0, -40.0, 0.0);
+	basedecorator();
 	glPopMatrix();
 
 	glPopMatrix();
@@ -1697,7 +1875,7 @@ void display(void) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPushMatrix();
-	gluLookAt(0.0 + camX, 0.0 + camY, 90.0 + camZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0.0 + camX, 0.0 + camY, 900.0 + camZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	glTranslatef(sceTX, sceTY, sceTZ);
 	glRotatef(sceRY, 0.0, 1.0, 0.0);
@@ -1707,15 +1885,17 @@ void display(void) {
 
 	drawAxes();
 	
+	setlighting();
+
 	glPushMatrix();
 	OlympicStadium();
 	glPopMatrix();
 
+
 	
 
 
-
-
+	
 	glPopMatrix();
 	glutSwapBuffers();
 	glDisable(GL_COLOR_MATERIAL);
@@ -1725,8 +1905,8 @@ void display(void) {
 
 
 void init(void) {
-	//glClearColor(0.0, 0.74, 1.0, 1.0);
-	glClearColor(0.1, 0.1, 0.33, 1.0);
+	glClearColor(0.0, 0.74, 1.0, 1.0);
+	//glClearColor(0.1, 0.1, 0.33, 1.0);
 	glClearDepth(1.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SMOOTH);
@@ -1741,6 +1921,8 @@ void init(void) {
 	loadDecoTexture();
 	loadRoadTexture();
 	loadDoorTexture();
+	loadShinyBlueTexture();
+	loadShinyGreenTexture();
 
 }
 
@@ -1788,10 +1970,26 @@ void keyboard(unsigned char key, int x, int y) {
 		sceRY += 3;
 	if (key == 'n')
 		sceRY -= 3;
-	if (key == '!')
+	if (key == '1')
 		glEnable(GL_LIGHT0);
-	if (key == '@')
+	if (key == '!')
 		glDisable(GL_LIGHT0);
+	if (key == '2')
+		glEnable(GL_LIGHT1);
+	if (key == '@')
+		glDisable(GL_LIGHT1);
+	if (key == '3')
+		glEnable(GL_LIGHT2);
+	if (key == '#')
+		glDisable(GL_LIGHT2);
+	if (key == '4')
+		glEnable(GL_LIGHT3);
+	if (key == '$')
+		glDisable(GL_LIGHT3);
+	if (key == '5')
+		glEnable(GL_LIGHT4);
+	if (key == '%')
+		glDisable(GL_LIGHT4);
 	if (key == 'c')
 		camX -= 5;
 	if (key == 'C')
@@ -1802,38 +2000,44 @@ void keyboard(unsigned char key, int x, int y) {
 	if (key == 'D')
 		if (doorRotate > 0)
 			doorRotate -= 120;
-	if (key == '1')
+	if (key == 'A')
 		animateBaseFlag = 1;
 		glutTimerFunc(1000 / 60, animateLampBase, 1.0);
-	if (key == '2')
+	if (key == 'S')
 		animateSecondFlag = 1;
 		glutTimerFunc(1000 / 60, animateLampSecond, 1.0);
-	if (key == '3')
+	if (key == 'L')
 		animateThirdFlag = 1;
 		glutTimerFunc(1000 / 60, animateLampThird, 1.0);
-	if (key == '4') {
+	if (key == 'B')
+		animateBallFlag = 1;
+		glutTimerFunc(1000 / 60, animateMoveBall, 1.0);
+	if (key == 'M')
+		animateRodsFlag = 1;
+		glutTimerFunc(1000 / 60, animateRods, 1.0);
+	if (key == 'F') {
 		if (openLeft != -40) {
 			openLeft -= 1;
 			openRight += 1;
 		}
 	}
-	if (key == '5') {
+	if (key == 'G') {
 		if (openLeft != 0) {
 			openLeft += 1;
 			openRight -= 1;
 		}
 	}
-	if (key == '6') {
+	if (key == 'H') {
 		if (goUp != 205) {
 			goUp += 10;
 		}
 	}
-	if (key == '7') {
+	if (key == 'J') {
 		if (goUp != 0) {
 			goUp -= 10;
 		}
 	}
-	if (key == 'o') {
+	if (key == 'K') {
 		frameNumber++;
 		if (frameNumber < 45) {
 			recRotate+=1;
@@ -1869,8 +2073,9 @@ int main(void) {
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	init();
-	glutTimerFunc(1000 / 60, animateMoveBall, 1.0);
-	glutTimerFunc(16, animateDeco, 1);
+	
+	glutTimerFunc(1000 / 50, animateDeco, 1);
+	glutTimerFunc(1000 / 60, animateRods, 1.0);
 	glutMainLoop();
 	return 0;
 }
