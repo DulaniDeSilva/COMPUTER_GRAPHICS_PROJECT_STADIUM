@@ -22,19 +22,20 @@ GLfloat rotX = 0.0f;
 GLfloat rotY = 0.0f;
 GLfloat rotZ = 0.0f;
 
+// variable for open and closing door
 GLfloat doorRotate = 0.0f;
 
-// lift door
+
+// Elivator  door
 GLfloat openLeft = 0.0f;
 GLfloat openRight = 0.0f;
 GLfloat goUp = 0.0f;
 
 
-int animateForthFlag = 0.0;
-int animateFifthFlag = 0.0;
-GLfloat oscialteRods = 0.0;
+// middle decorator
 int animateRodsFlag = 0.0;
 GLfloat moveRods = 0.0;
+GLfloat oscialteRods = 0.0;
 
 //animate deco
 GLfloat rotateGlobe = 0.0f;
@@ -42,7 +43,7 @@ GLfloat rotateGlobe = 0.0f;
 
 constexpr float PI = 3.14159265358979323846;
 
-//################ animate base
+// animate base lamp
 GLfloat moveBase;
 GLfloat moveSecond;
 GLfloat moveThird;
@@ -51,6 +52,10 @@ int animateSecondFlag = 0.0;
 int animateBallFlag = 0.0;
 int moveLampStand = 0.0;
 int animateThirdFlag = 0.0;
+
+int animateForthFlag = 0.0;
+int animateFifthFlag = 0.0;
+
 
 unsigned char* trackImage;
 GLuint trackTexture;
@@ -152,8 +157,7 @@ void setlighting() {
 
 }
 
-//drawing a cylinder: not solid 
-
+//drawing a cylinder: (not solid )
 void drawCylinder(float radius, float height) {
 	float x = 0;
 	float y = 0;
@@ -175,6 +179,7 @@ void drawCylinder(float radius, float height) {
 	glEnd();
 }
 
+//drawing a cylinder: with gluCylinder
 void drawSolidCylinder(float innerRadius,float outerRadius ,float height) {
 	glPushMatrix();
 	glRotatef(90.0, 1.0, 0.0, 0.0);
@@ -185,6 +190,7 @@ void drawSolidCylinder(float innerRadius,float outerRadius ,float height) {
 	glPopMatrix();
 }
 
+//drawing cube
 void drawCube() {
 
 	glBegin(GL_QUADS);
@@ -222,8 +228,8 @@ void drawCube() {
 
 }
 
-
-//drawing solid cylinder
+//drawing cylinder
+/*
 void drawSolidCylinder(float radius, float height) {
 	float angle = 0.0;
 	float stepSize = 0.1;
@@ -242,6 +248,8 @@ void drawSolidCylinder(float radius, float height) {
 
 
 }
+*/
+
 
 //drawing circle
 void drawCircle(double radius, int n) {
@@ -292,7 +300,7 @@ void drawGrid() {
 	glEnd();
 }
 
-//LAND
+// #######################################################################   LAND
 
 void loadTextureDataFromGrassImage() {
 	grassImage = SOIL_load_image("grass.jpeg", &grassWidth, &grassHeight, 0, SOIL_LOAD_RGB);
@@ -329,7 +337,7 @@ void drawLand() {
 	glDisable(GL_TEXTURE_2D);
 }
 
-
+	//creating land without textures
 void drawGrassLand() {
 	glColor3f(0.10, 0.30, 0.10);
 	//glColor3f(0.05, 0.57, 0.46);
@@ -343,7 +351,7 @@ void drawGrassLand() {
 
 
 
-//#############################################  STADIUM FLOOR TRACK #############################################
+//#########################################################################     STADIUM FLOOR TRACK 
 void loadTextureDataFromTrackImage() {
 	trackImage = SOIL_load_image("olympictrack.jpg", &trackWidth, &trackHeight, 0, SOIL_LOAD_RGB);
 
@@ -366,9 +374,10 @@ void loadTrackTexture() {
 	SOIL_free_image_data(trackImage);
 }
 
+//loading stadium outside round land image
 void loadCircleLand() {
 	textureIDLand = SOIL_load_OGL_texture(
-		"flor2.jpeg",
+		"flor2.jpeg", //stadium outside gray land
 		SOIL_LOAD_AUTO,
 		SOIL_CREATE_NEW_ID,
 		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
@@ -378,10 +387,10 @@ void loadCircleLand() {
 	}
 }
 
-
+// stadium floor
 void stadiumGround() {
 
-	//gray land
+	//stadium outside gray land
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	GLUquadric* qaud = gluNewQuadric();
@@ -395,7 +404,7 @@ void stadiumGround() {
 	glPopMatrix();
 
 
-	//green land
+	//green land 
 	glColor3f(0.01, 0.49, 0.18);
 	glBegin(GL_POLYGON);
 	glVertex3f(475, 0.2, -475);
@@ -431,7 +440,8 @@ void stadiumGround() {
 }
 
 
-//############################################   STADIUM FRONT WALLS AND DOOR #################################
+//##########################################################################   STADIUM FRONT WALLS AND DOOR 
+	// Door
 void loadTextureDataFromDoorImage() {
 	doorImage = SOIL_load_image("dooor.jpeg", &doorWidth, &doorHeight, 0, SOIL_LOAD_RGB);
 
@@ -481,6 +491,8 @@ void drawDoor() {
 
 }
 
+
+	//front single wall
 void loadTextureDataFromWallImage() {
 	wallImage = SOIL_load_image("wall11.jpg", &wallWidth, &wallHeight, 0, SOIL_LOAD_RGB);
 
@@ -503,6 +515,7 @@ void loadWallTexture() {
 	SOIL_free_image_data(wallImage);
 }
 
+	//front single wall with door
 void frontWall() {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, wallTexture);
@@ -533,7 +546,7 @@ void frontWall() {
 
 }
 
-// ############################################ STADIUM LOWER BUILDING ##########################################
+// #########################################################################     STADIUM LOWER BUILDING 
 void drawWalls() {
 	glPushMatrix();
 	glTranslatef(0.0, 0.0, -950.0);
@@ -558,9 +571,9 @@ void drawWalls() {
 }
 
 
-//############################################# Top Structure#########################
+//########################################################################     Top Structure
 
-//curve line structures
+//curve line structures: (not used)
 void drawCurveWalls() {
 	glColor3f(0.0, 0.0, 0.0);
 	//GLfloat radius = 10;
@@ -573,6 +586,7 @@ void drawCurveWalls() {
 
 }
 
+//wired half sphere
 void wiredHalfSphere() {
 	glEnable(GL_CLIP_PLANE0);
 	double planeEq[4] = { 0.0, 1.0, 0.0,0.0 };
@@ -584,6 +598,7 @@ void wiredHalfSphere() {
 	glDisable(GL_CLIP_PLANE0);
 }
 
+//first top cylinder
 void drawTop() {
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
@@ -605,7 +620,7 @@ void drawTop() {
 
 
 
-
+	//second top cylinder
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glTranslatef(0.0, 200.0, 0.0);
@@ -624,6 +639,8 @@ void drawTop() {
 	//drawCurveWalls();
 	glPopMatrix();
 
+
+	//third top cylinder
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glTranslatef(0.0, 300.0, 0.0);
@@ -643,17 +660,15 @@ void drawTop() {
 	//glutSolidTorus(50.0, 480.0, 15, 15);
 	glPopMatrix();
 
+	//wired sphere
 	glPushMatrix();
 	glTranslatef(0.0, 300.0, 0.0);
 	wiredHalfSphere();
 	glPopMatrix();
 
-
-
-
 }
 
-//################################## LARGE TOWERS
+//#################################################################          LARGE TOWERS
 
 void loadTowerTexture() {
 	towerTexture = SOIL_load_OGL_texture(
@@ -695,43 +710,40 @@ void drawTorus() {
 
 
 	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
 	glRotatef(-90, 1.0, 0.0, 0.0);
 	GLUquadric* quad = gluNewQuadric();
 	gluQuadricTexture(quad, GL_TRUE);
 	glBindTexture(GL_TEXTURE_2D, towerTexture);
 	gluCylinder(quad, 2, 2, 100.0, 20, 20);
 	gluDeleteQuadric(quad);
+	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 
 }
 
+//circular large tower set
 void drawCircularFlagSet() {
-	const int numChairs = 6; //number of single
-	const int numSets = 6;    // Number of chair sets
-	const float circleRadius = 950.0; // Radius of the circle
-
-	for (int setIndex = 0; setIndex < numSets; setIndex++) {
-		float angleIncrement = 360.0 / numChairs; // Angle between chairs
-
-		for (int chairIndex = 0; chairIndex < numChairs; chairIndex++) {
-			float angle = chairIndex * angleIncrement + setIndex * (360.0 / numSets);
-
-			float x = circleRadius * cos(angle * (3.14159265 / 180.0));
-			float z = circleRadius * sin(angle * (3.14159265 / 180.0));
-
-			glPushMatrix();
-			glTranslatef(x, 0.0, z);
-			glScalef(10.0, 10.0, 10.0);
-			drawTorus();
-			glPopMatrix();
-		}
+	GLfloat radius = 950.0;
+	GLfloat x = 0;
+	GLfloat z = 0;
+	double angle = 0.0;
+	for (int c = 0; c < 6; c++) {
+		x = radius * cos(angle);
+		z = radius * sin(angle);
+		glPushMatrix();
+		glTranslatef(x, 0, z);
+		glScalef(10.0, 10.0, 10.0);
+		drawTorus();
+		glPopMatrix();
+		angle = angle + (2 * PI) / 6;
 	}
 }
 
 
-//############################################# Stadium chairs
+//#################################################################           Stadium chairs
 
-//structure to cover the stdium first level
+//structure to cover the stdium first top level
 void drawSeatArea() {
 
 	glEnable(GL_TEXTURE_2D);
@@ -765,6 +777,8 @@ void drawSeatArea() {
 
 }
 
+
+//chairs
 void loadTextureDataFromImage() {
 	chairImage = SOIL_load_image("red_texture.jpg", &chairWidth, &chairHeight, 0, SOIL_LOAD_RGB);
 
@@ -829,6 +843,7 @@ void chair() {
 
 }
 
+//single chair
 void drawChair() {
 	
 	glPushMatrix();
@@ -850,6 +865,7 @@ void drawChair() {
 
 }
 
+//one chair set
 void drawChairSet() {
 	GLfloat z = 0;
 	GLfloat y = 5;
@@ -867,6 +883,7 @@ void drawChairSet() {
 	}
 }
 
+//four sides chair sets
 void stadiumChairs() {
 
 	glPushMatrix();
@@ -899,6 +916,7 @@ void stadiumChairs() {
 
 }
 
+//stadium all chair sets
 void totalSeatingArea() {
 	drawSeatArea();
 
@@ -911,7 +929,7 @@ void totalSeatingArea() {
 	glTranslatef(0.0, 120.0, 0.0);
 	for (int i = 280; i <= 450; i++) {
 		glColor3f(0.78, 0.78, 0.8);
-		drawSolidCylinder(i, 2.0);
+		drawCylinder(i, 2.0);
 	}
 	glPopMatrix();
 	
@@ -926,7 +944,8 @@ void totalSeatingArea() {
 	glColor3f(0.49, 0.38, 0.38);
 	for (int i = 280; i <= 450; i++) {
 		glColor3f(0.78, 0.78, 0.8);
-		drawSolidCylinder(i, 2.0);
+		//drawSolidCylinder(i, 2.0);
+		drawCylinder(i, 2.0);
 	}
 	glPopMatrix();
 
@@ -936,7 +955,7 @@ void totalSeatingArea() {
 	glPopMatrix();
 }
 
-//################################# Shooting structure
+//################################################################            Shooting structure
 void Rightleg() {
 	glColor3f(0.16, 0.17, 0.42);
 	glutSolidSphere(1.0, 30.0, 30.0);
@@ -981,7 +1000,6 @@ void LeftLeg() {
 	glPushMatrix();
 	glTranslatef(0, -10, 0.0);
 	glColor3f(1.0, 1.0, 1.0);
-	//glRotatef(-triRotate, 0, 0, 1);
 	drawCylinder(1.0, 6.0);
 	glPopMatrix();
 }
@@ -1087,7 +1105,7 @@ void Robot() {
 	glPopMatrix();
 }
 
-// ############################  fire
+// ###############################################################             fire structure
 void loadFireTexture() {
 	fireTextureID = SOIL_load_OGL_texture(
 		"fire.jpg",
@@ -1144,20 +1162,14 @@ void fire() {
 	fireStructure();
 	glPopMatrix();
 
-
-
-
-
 	fireStructure();
 
 
 }
 
 
-
-
-
-//#############################################  LAMP STRUCTURE ################################################
+//################################################################                LAMP STRUCTURE 
+//red color base
 void animateLampBase(int x) {
 	if (animateBaseFlag && moveBase <= 20.0) {
 		moveBase += 1.0;
@@ -1167,6 +1179,7 @@ void animateLampBase(int x) {
 
 }
 
+//yellow base
 void animateLampSecond(int x) {
 	if (animateSecondFlag && moveSecond <= 20.0) {
 		moveSecond += 1.0;
@@ -1175,6 +1188,7 @@ void animateLampSecond(int x) {
 	}
 }
 
+//lamp animation
 void animateLampThird(int x) {
 	if (animateThirdFlag && moveThird <= 50.0) {
 		moveThird += 1.0;
@@ -1213,6 +1227,7 @@ void halfSphere() {
 
 }
 
+//all lamp components
 void lampStand() {
 	glPushMatrix();
 	glTranslatef(0.0, -32.0, 0.0);
@@ -1252,6 +1267,7 @@ void lampStand() {
 
 }
 
+//combining all lamp structure with base
 void drawLamp() {
 	glPushMatrix();
 	glColor3f(0.85, 0.0, 0.35);
@@ -1298,6 +1314,8 @@ void loadShinyGreenTexture() {
 	}
 }
 
+//################################################################            Rods decorator lamp
+//one single rod
 void onerod() {
 	glPushMatrix();
 	glRotatef(-90.0, 1.0 ,0.0, 0.0);
@@ -1312,6 +1330,7 @@ void onerod() {
 	glPopMatrix();
 }
 
+//single circle rod
 void drawDecRods(GLfloat radius) {
 	GLfloat x = 0;
 	GLfloat z = 0;
@@ -1327,6 +1346,7 @@ void drawDecRods(GLfloat radius) {
 	}
 }
 
+//animation with rotation and translation
 void animateRods(int n) {
 		oscialteRods++;
 	if (animateRodsFlag && moveRods <= 40.0) {
@@ -1338,6 +1358,7 @@ void animateRods(int n) {
 }
 
 
+//lamp decorator base structure all
 void basedecorator() {
 	glPushMatrix();
 	glTranslatef(0.0, moveRods, 0.0);
@@ -1368,7 +1389,7 @@ void basedecorator() {
 
 }
 
-//##################################### Elevator structure
+//###############################################################              Elevator structure
 
 
 void elivatorHolder() {
@@ -1532,7 +1553,7 @@ void fourElivators() {
 	glPopMatrix();
 }
 
-//################################# OLYMPIC SYMBOL
+//################################################################                 OLYMPIC SYMBOL
 void loadTextureDataFromSymbolImage() {
 	symbolImage = SOIL_load_image("wall11.jpg", &symbolWidth, &symbolHeight, 0, SOIL_LOAD_RGB);
 
@@ -1612,7 +1633,7 @@ void symbolHolder() {
 	glDisable(GL_TEXTURE_2D);
 }
 
-//####################################  Flags
+//################################################################                     Flags
 
 
 void loadTextureDataFromFlagImage() {
@@ -1691,7 +1712,7 @@ void flagset() {
 }
 
 
-//################################# other items
+//#################################################################             Decoration front item
 void animateDeco(int n) {
 	rotateGlobe++;
 	glutPostRedisplay();
@@ -1752,7 +1773,7 @@ void decorator() {
 	glPopMatrix();
 }
 
-//################### roads
+//################################################################                       roads
 void loadTextureDataFromRoadImage() {
 	roadImage = SOIL_load_image("road.jpeg", &roadWidth, &roadHeight, 0, SOIL_LOAD_RGB);
 
@@ -1791,16 +1812,16 @@ void drawRoads() {
 }
 
 
-//##################################### DRAWING THE STADIUM #######################
+//################################################ DRAWING THE STADIUM ############################################################
 
 
 void OlympicStadium() {
 	glPushMatrix();
 
-	
+	//land
 	drawGrassLand();
 	
-
+	//walls
 	glPushMatrix();
 	glTranslatef(0.0, 0.0, 475);
 	drawWalls();
@@ -1828,6 +1849,7 @@ void OlympicStadium() {
 	symbolHolder();
 	glPopMatrix();
 
+	//large set of torus
 	drawCircularFlagSet();
 
 	glPushMatrix();
@@ -1882,6 +1904,7 @@ void display(void) {
 	setlighting();
 
 	glPushMatrix();
+	
 	OlympicStadium();
 	glPopMatrix();
 
@@ -2029,16 +2052,16 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	if (key == 'K') {
 		frameNumber++;
-		if (frameNumber < 45) {
+		if (frameNumber < 30) {
 			recRotate+=1;
 			triRotate+=1;
 		}
-		if (frameNumber >= 45) {
+		if (frameNumber >= 30) {
 			recRotate-=1;
 		}
 		if (recRotate == 0) {
 			recRotate = 0;
-			triRotate = 160;
+			triRotate = 180;
 			frameNumber = 0;
 		}
 	}
